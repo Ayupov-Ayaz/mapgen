@@ -1,6 +1,7 @@
 package analysis
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -32,8 +33,8 @@ func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 					if len(vSpec.Values) > 0 {
 						for _, sv := range vSpec.Values {
 							lit, err := internal.CastCompositeLit(sv)
-							if err != nil {
-								return nil, err
+							if err != nil && errors.Is(err, internal.ErrCastFailed) {
+								continue
 							}
 
 							astIdent, err := internal.CastAstIdent(lit.Type)
