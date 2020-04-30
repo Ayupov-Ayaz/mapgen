@@ -37,7 +37,7 @@ func getGenFilename(filename string) string {
 	return n + ".gen.go"
 }
 
-func (w FileRecorder) WriteToFile(filename string, t *template.Template, i interface{}) error {
+func (w FileRecorder) RecordToFile(filename string, t *template.Template, i interface{}) error {
 	gFileName := getGenFilename(filename)
 
 	if fileExist(gFileName) {
