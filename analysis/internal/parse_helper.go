@@ -3,6 +3,7 @@ package internal
 import (
 	"errors"
 	"go/ast"
+	"strings"
 )
 
 func ParseMapValues(cl *ast.CompositeLit) (map[string]MapValData, error) {
@@ -138,4 +139,19 @@ func ParseKeyValueTypeFromMapType(mapType *ast.MapType) (*MapKeyValue, error) {
 	val := NewSpecType("", valData.Name)
 
 	return NewMapKeyVal(key, val), nil
+}
+
+func ParseComment(decl *ast.GenDecl, expComment string) (string, bool) {
+	if decl.Doc != nil {
+		if len(decl.Doc.List) > 0 {
+			for _, c := range decl.Doc.List {
+				if strings.Contains(c.Text, expComment) {
+					str := strings.Replace(c.Text, expComment, "", 1)
+					return strings.Replace(str, "//", "", 1), true
+				}
+			}
+		}
+	}
+
+	return "", false
 }

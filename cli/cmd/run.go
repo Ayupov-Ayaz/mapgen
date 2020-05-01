@@ -21,7 +21,6 @@ var (
 		RunE:  run,
 	}
 	runFlags = struct {
-		Package       string
 		Path          string
 		SearchMapType string
 		CountType     string
@@ -30,9 +29,6 @@ var (
 )
 
 func init() {
-	runCmd.PersistentFlags().StringVarP(&runFlags.Package, "package", "p",
-		"", "package name for generated struct")
-
 	runCmd.PersistentFlags().StringVarP(&runFlags.Path, "filepath", "f",
 		"", "path to file where i can find map")
 
@@ -47,10 +43,6 @@ func init() {
 }
 
 func validateFlags() error {
-	if len(runFlags.Package) == 0 {
-		return errors.New("'package' flag doesn't be empty")
-	}
-
 	if len(runFlags.SearchMapType) == 0 {
 		return errors.New("'type' flag doesn't be empty")
 	}
@@ -85,7 +77,6 @@ func run(cmd *cobra.Command, args []string) error {
 	switch runFlags.Command {
 	case cmdMapBySlice:
 		mp := analysis.NewMapParams(
-			runFlags.Package,
 			runFlags.Path,
 			runFlags.SearchMapType,
 			runFlags.CountType,

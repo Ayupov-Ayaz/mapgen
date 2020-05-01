@@ -6,7 +6,6 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"strings"
 
 	"github.com/ayupov-ayaz/mapgen/analysis/internal/helpers"
 
@@ -14,7 +13,7 @@ import (
 )
 
 const (
-	commentExp = "map_gen:"
+	expComment = "map_gen:"
 )
 
 func parseImports(d *ast.GenDecl) ([]string, error) {
@@ -31,23 +30,8 @@ func parseImports(d *ast.GenDecl) ([]string, error) {
 	return imports, nil
 }
 
-func parseComment(decl *ast.GenDecl) (string, bool) {
-	if decl.Doc != nil {
-		if len(decl.Doc.List) > 0 {
-			for _, c := range decl.Doc.List {
-				if strings.Contains(c.Text, commentExp) {
-					str := strings.Replace(c.Text, commentExp, "", 1)
-					return strings.Replace(str, "//", "", 1), true
-				}
-			}
-		}
-	}
-
-	return "", false
-}
-
-func analysisFileByMap(mapData MapParams) ([]internal.Result, error) {
-	result := internal.NewResult(mapData.CountType)
+func analysisFileByMap(mapData MapParams) (*internal.Results, error) {
+	//var packageName string
 
 	results := make([]internal.Result, 0, 2)
 
@@ -73,11 +57,12 @@ func analysisFileByMap(mapData MapParams) ([]internal.Result, error) {
 				}
 
 			case token.VAR:
-				comment, ok := parseComment(decl)
+				comment, ok := internal.ParseComment(decl, expComment)
 				if !ok {
 					continue
 				}
 
+				result := internal.NewResult(mapData.CountType)
 				result.StructName = comment
 
 				for _, spec := range decl.Specs {
@@ -134,5 +119,5 @@ func analysisFileByMap(mapData MapParams) ([]internal.Result, error) {
 		}
 	}
 
-	return results, nil
+	return internal.NewResults(f.Name.Name, results), nil
 }

@@ -33,8 +33,8 @@ func getUniqueImports(r []Result) []string {
 	return imports
 }
 
-func NewResults(_package string, results []Result) Results {
-	return Results{
+func NewResults(_package string, results []Result) *Results {
+	return &Results{
 		Package: _package,
 		Imports: getUniqueImports(results),
 		R:       results,
