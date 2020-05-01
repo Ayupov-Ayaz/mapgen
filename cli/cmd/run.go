@@ -21,10 +21,9 @@ var (
 		RunE:  run,
 	}
 	runFlags = struct {
-		Path          string
-		SearchMapType string
-		CountType     string
-		Command       string
+		Path      string
+		CountType string
+		Command   string
 	}{}
 )
 
@@ -35,18 +34,11 @@ func init() {
 	runCmd.PersistentFlags().StringVarP(&runFlags.CountType, "arg_type", "a",
 		"uint8", "count type (uint8, uint16, uint32, int, int32, int64)")
 
-	runCmd.PersistentFlags().StringVarP(&runFlags.SearchMapType, "type", "t",
-		"", "map type struct; Example: t=MapPayout for type MapPayout = map[string][]int")
-
 	runCmd.PersistentFlags().StringVarP(&runFlags.Command, "command", "c", cmdMapBySlice,
 		"generate command")
 }
 
 func validateFlags() error {
-	if len(runFlags.SearchMapType) == 0 {
-		return errors.New("'type' flag doesn't be empty")
-	}
-
 	if len(runFlags.Path) == 0 {
 		return errors.New("'path' flag doesn't be empty")
 	}
@@ -78,7 +70,6 @@ func run(cmd *cobra.Command, args []string) error {
 	case cmdMapBySlice:
 		mp := analysis.NewMapParams(
 			runFlags.Path,
-			runFlags.SearchMapType,
 			runFlags.CountType,
 		)
 
