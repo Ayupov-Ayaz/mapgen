@@ -79,6 +79,15 @@ func GetSelectorExpr(expr ast.Expr) (*ast.SelectorExpr, error) {
 	return s, nil
 }
 
+func CastImportSpec(spec ast.Spec) (*ast.ImportSpec, error) {
+	i, ok := spec.(*ast.ImportSpec)
+	if !ok {
+		return nil, ErrCastFailed
+	}
+
+	return i, nil
+}
+
 func CastSliceBasicList(expr []ast.Expr) ([]*ast.BasicLit, error) {
 	bls := make([]*ast.BasicLit, len(expr))
 	for i, e := range expr {

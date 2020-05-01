@@ -7,8 +7,24 @@ import (
 	"go/parser"
 	"go/token"
 
+	"github.com/ayupov-ayaz/mapgen/analysis/internal/helpers"
+
 	"github.com/ayupov-ayaz/mapgen/analysis/internal"
 )
+
+func parseImports(d *ast.GenDecl) ([]string, error) {
+	imports := make([]string, len(d.Specs))
+	for i, imp := range d.Specs {
+		importStr, err := internal.ParseImport(imp)
+		if err != nil {
+			return nil, err
+		}
+
+		imports[i] = importStr
+	}
+
+	return imports, nil
+}
 
 func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 	result := internal.NewResult("")
@@ -21,12 +37,19 @@ func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 
 	var (
 		mapKeyVal *internal.MapKeyValue
+		imports   []string
 	)
 
 	for _, decl := range f.Decls {
 		switch decl := decl.(type) {
 		case *ast.GenDecl:
 			switch decl.Tok {
+			case token.IMPORT:
+				imports, err = parseImports(decl)
+				if err != nil {
+					return nil, err
+				}
+
 			case token.VAR:
 				for _, spec := range decl.Specs {
 					vSpec, ok := spec.(*ast.ValueSpec)
@@ -70,6 +93,9 @@ func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 
 							md := internal.NewMapData(mapData.MapType, *mapKeyVal, v)
 							result.SetMapData(md)
+
+							imps := helpers.GetNeedImports(*mapKeyVal, imports)
+							result.SetImports(imps)
 						}
 					}
 				}
