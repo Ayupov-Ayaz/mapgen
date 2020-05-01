@@ -6,10 +6,15 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"strings"
 
 	"github.com/ayupov-ayaz/mapgen/analysis/internal/helpers"
 
 	"github.com/ayupov-ayaz/mapgen/analysis/internal"
+)
+
+const (
+	commentExp = "map_gen:"
 )
 
 func parseImports(d *ast.GenDecl) ([]string, error) {
@@ -26,13 +31,30 @@ func parseImports(d *ast.GenDecl) ([]string, error) {
 	return imports, nil
 }
 
-func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
+func parseComment(decl *ast.GenDecl) (string, bool) {
+	if decl.Doc != nil {
+		if len(decl.Doc.List) > 0 {
+			for _, c := range decl.Doc.List {
+				if strings.Contains(c.Text, commentExp) {
+					str := strings.Replace(c.Text, commentExp, "", 1)
+					return strings.Replace(str, "//", "", 1), true
+				}
+			}
+		}
+	}
+
+	return "", false
+}
+
+func analysisFileByMap(mapData MapParams) ([]internal.Result, error) {
 	result := internal.NewResult(mapData.CountType)
 
+	results := make([]internal.Result, 0, 2)
+
 	fSet := token.NewFileSet()
-	f, err := parser.ParseFile(fSet, mapData.FilePath, nil, 0)
+	f, err := parser.ParseFile(fSet, mapData.FilePath, nil, parser.ParseComments)
 	if err != nil {
-		return result, fmt.Errorf("ParseFile failed: %w", err)
+		return nil, fmt.Errorf("ParseFile failed: %w", err)
 	}
 
 	var (
@@ -51,6 +73,13 @@ func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 				}
 
 			case token.VAR:
+				comment, ok := parseComment(decl)
+				if !ok {
+					continue
+				}
+
+				result.StructName = comment
+
 				for _, spec := range decl.Specs {
 					vSpec, ok := spec.(*ast.ValueSpec)
 					if !ok {
@@ -91,11 +120,13 @@ func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 								return nil, err
 							}
 
-							md := internal.NewMapData(mapData.MapType, *mapKeyVal, v)
+							md := internal.NewMapData(*mapKeyVal, v)
 							result.SetMapData(md)
 
 							imps := helpers.GetNeedImports(*mapKeyVal, imports)
 							result.SetImports(imps)
+
+							results = append(results, *result)
 						}
 					}
 				}
@@ -103,5 +134,5 @@ func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 		}
 	}
 
-	return result, nil
+	return results, nil
 }

@@ -23,7 +23,6 @@ var (
 	runFlags = struct {
 		Package       string
 		Path          string
-		StructName    string
 		SearchMapType string
 		CountType     string
 		Command       string
@@ -36,9 +35,6 @@ func init() {
 
 	runCmd.PersistentFlags().StringVarP(&runFlags.Path, "filepath", "f",
 		"", "path to file where i can find map")
-
-	runCmd.PersistentFlags().StringVarP(&runFlags.StructName, "name", "n",
-		"", "for new generated struct name")
 
 	runCmd.PersistentFlags().StringVarP(&runFlags.CountType, "arg_type", "a",
 		"uint8", "count type (uint8, uint16, uint32, int, int32, int64)")
@@ -57,10 +53,6 @@ func validateFlags() error {
 
 	if len(runFlags.SearchMapType) == 0 {
 		return errors.New("'type' flag doesn't be empty")
-	}
-
-	if len(runFlags.StructName) == 0 {
-		return errors.New("'name' flag doesn't be empty")
 	}
 
 	if len(runFlags.Path) == 0 {
@@ -96,7 +88,6 @@ func run(cmd *cobra.Command, args []string) error {
 			runFlags.Package,
 			runFlags.Path,
 			runFlags.SearchMapType,
-			runFlags.StructName,
 			runFlags.CountType,
 		)
 

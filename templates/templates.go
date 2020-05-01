@@ -3,22 +3,21 @@ package templates
 const MapImpl = `//CODE GENERATED AUTOMATICALLY. DO NOT EDIT.
 package {{.Package}}
 
-import (
-{{range $k, $val := $.Imports}}
+import ({{range $k, $val := $.Imports}}
 {{$val}}{{end}}	
 )
-
-type {{$.Type}} struct {}
-
-func (p {{$.Type}}) Get(s {{$.Map.KV.Key.FullType}}, count {{$.CountType}}) {{$.Map.KV.Val.FullType}} {
+{{range $i, $result := $.R}}
+type {{$result.StructName}} struct {}
+func (p {{$result.StructName}}) Get(s {{$result.KeyType}}, count {{$result.CountType}}) {{$result.ValType}} {
 	switch s {
-		{{range $key, $val := $.Map.Data }}
+		{{range $key, $val := $result.Map.Data }}
 			case {{$key}}:
-				if count < {{$val.Length}} && count >= 0  {
-					return {{"[]"}}{{$.Map.KV.Val.FullType}}{{"{"}}{{$val.Join}}{{"}"}}[count]
-				}
+				if count < {{$val.Length}}{{$result.Condition}}{
+					return {{"[]"}}{{$result.ValType}}{{"{"}}{{$val.Join}}{{"}"}}[count]}
 		{{end}}
 	}
 	return 0
 }
+
+{{end}}
 `
