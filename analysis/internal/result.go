@@ -2,7 +2,7 @@ package internal
 
 import "strings"
 
-type Results struct {
+type FileResult struct {
 	Package string
 	Imports []string
 	R       []Result
@@ -33,8 +33,8 @@ func getUniqueImports(r []Result) []string {
 	return imports
 }
 
-func NewResults(_package string, results []Result) *Results {
-	return &Results{
+func NewFileResult(_package string, results []Result) *FileResult {
+	return &FileResult{
 		Package: _package,
 		Imports: getUniqueImports(results),
 		R:       results,

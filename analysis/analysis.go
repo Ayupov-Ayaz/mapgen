@@ -30,7 +30,7 @@ func parseImports(d *ast.GenDecl) ([]string, error) {
 	return imports, nil
 }
 
-func analysisFileByMap(mapData MapParams) (*internal.Results, error) {
+func analysisFileByMap(mapData MapParams) (*internal.FileResult, error) {
 	results := make([]internal.Result, 0, 2)
 
 	fSet := token.NewFileSet()
@@ -105,5 +105,5 @@ func analysisFileByMap(mapData MapParams) (*internal.Results, error) {
 		}
 	}
 
-	return internal.NewResults(f.Name.Name, results), nil
+	return internal.NewFileResult(f.Name.Name, results), nil
 }
