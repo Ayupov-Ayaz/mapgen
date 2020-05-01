@@ -3,13 +3,11 @@ package analysis
 import "strings"
 
 type MapParams struct {
-	FilePath  string
-	CountType string
+	FilePath string
 }
 
-func NewMapParams(filepath, countType string) MapParams {
+func NewMapParams(filepath string) MapParams {
 	return MapParams{
-		CountType: countType,
-		FilePath:  strings.Replace(filepath, ".go", "", 1) + ".go",
+		FilePath: strings.Replace(filepath, ".go", "", 1) + ".go",
 	}
 }

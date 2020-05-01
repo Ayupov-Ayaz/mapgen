@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	cmdMapBySlice = "map_by_slice"
+	cmdMapBySlice = "map_by_slice" //todo: в теги перевести
 )
 
 var (
@@ -21,18 +21,14 @@ var (
 		RunE:  run,
 	}
 	runFlags = struct {
-		Path      string
-		CountType string
-		Command   string
+		Path    string
+		Command string
 	}{}
 )
 
 func init() {
 	runCmd.PersistentFlags().StringVarP(&runFlags.Path, "filepath", "f",
 		"", "path to file where i can find map")
-
-	runCmd.PersistentFlags().StringVarP(&runFlags.CountType, "arg_type", "a",
-		"uint8", "count type (uint8, uint16, uint32, int, int32, int64)")
 
 	runCmd.PersistentFlags().StringVarP(&runFlags.Command, "command", "c", cmdMapBySlice,
 		"generate command")
@@ -46,21 +42,8 @@ func validateFlags() error {
 	return nil
 }
 
-func checkCountType() error {
-	switch runFlags.CountType {
-	case "uint8", "uint16", "uint32", "uint64", "int", "int32", "int64":
-		return nil
-	}
-	return errors.New("invalid count type")
-}
-
 func run(cmd *cobra.Command, args []string) error {
 	err := validateFlags()
-	if err != nil {
-		return err
-	}
-
-	err = checkCountType()
 	if err != nil {
 		return err
 	}
@@ -70,7 +53,6 @@ func run(cmd *cobra.Command, args []string) error {
 	case cmdMapBySlice:
 		mp := analysis.NewMapParams(
 			runFlags.Path,
-			runFlags.CountType,
 		)
 
 		err = analysis.GenerateMapByString(recorder, mp)
