@@ -31,8 +31,6 @@ func parseImports(d *ast.GenDecl) ([]string, error) {
 }
 
 func analysisFileByMap(mapData MapParams) (*internal.Results, error) {
-	//var packageName string
-
 	results := make([]internal.Result, 0, 2)
 
 	fSet := token.NewFileSet()
@@ -78,26 +76,14 @@ func analysisFileByMap(mapData MapParams) (*internal.Results, error) {
 								continue
 							}
 
-							astIdent, ok := lit.Type.(*ast.Ident)
-							if ok {
-								if astIdent.Name != mapData.MapType {
-									continue
-								}
+							mapType, err := internal.CastMapType(lit.Type)
+							if err != nil {
+								return nil, err
+							}
 
-								mapKeyVal, err = internal.ParseKeyValueTypeFromIdent(astIdent)
-								if err != nil {
-									return nil, err
-								}
-							} else {
-								mapType, err := internal.CastMapType(lit.Type)
-								if err != nil {
-									return nil, err
-								}
-
-								mapKeyVal, err = internal.ParseKeyValueTypeFromMapType(mapType)
-								if err != nil {
-									return nil, err
-								}
+							mapKeyVal, err = internal.ParseKeyValueTypeFromMapType(mapType)
+							if err != nil {
+								return nil, err
 							}
 
 							v, err := internal.ParseMapValues(lit)

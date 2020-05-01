@@ -82,28 +82,6 @@ func GetMapVal(expr ast.Expr) (string, error) {
 	return arr, nil
 }
 
-func ParseKeyValueTypeFromIdent(ident *ast.Ident) (*MapKeyValue, error) {
-	typeSpec, err := CastTypeSpec(ident.Obj.Decl)
-	if err != nil {
-		return nil, err
-	}
-
-	mapType, err := CastMapType(typeSpec.Type)
-	if err != nil {
-		return nil, err
-	}
-	key, err := ParseAstIdentName(mapType.Key)
-	if err != nil {
-		return nil, err
-	}
-	val, err := GetMapVal(mapType.Value)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewMapKeyVal(NewSpecType("", key), NewSpecType("", val)), nil
-}
-
 func ParseImport(spec ast.Spec) (string, error) {
 	imp, err := CastImportSpec(spec)
 	if err != nil {
