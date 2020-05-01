@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"text/template"
 
-	"github.com/ayupov-ayaz/mapgen/analysis/internal"
-
 	"github.com/ayupov-ayaz/mapgen/templates"
 )
 
@@ -18,15 +16,14 @@ func prepareTemplate(templatePath string) *template.Template {
 }
 
 func GenerateMapByString(w TemplateRecorder, data MapParams) error {
-	results, err := analysisFileByMap(data)
+	result, err := analysisFileByMap(data)
 	if err != nil {
 		return err
 	}
 
-	rData := internal.NewResults(data.PackageName, results)
 	t := prepareTemplate(templates.MapImpl)
 
-	if err := w.RecordToFile(data.FilePath, t, rData); err != nil {
+	if err := w.RecordToFile(data.FilePath, t, result); err != nil {
 		return fmt.Errorf("write to file failed: %w", err)
 	}
 
