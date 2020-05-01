@@ -12,10 +12,6 @@ import (
 	"github.com/ayupov-ayaz/mapgen/analysis/internal"
 )
 
-const (
-	expComment = "map_gen:"
-)
-
 func parseImports(d *ast.GenDecl) ([]string, error) {
 	imports := make([]string, len(d.Specs))
 	for i, imp := range d.Specs {
@@ -30,7 +26,7 @@ func parseImports(d *ast.GenDecl) ([]string, error) {
 	return imports, nil
 }
 
-func analysisFileByMap(mapData MapParams) (*internal.Results, error) {
+func analysisFileByMap(mapData MapParams) (*internal.FileResult, error) {
 	results := make([]internal.Result, 0, 2)
 
 	fSet := token.NewFileSet()
@@ -55,13 +51,17 @@ func analysisFileByMap(mapData MapParams) (*internal.Results, error) {
 				}
 
 			case token.VAR:
-				comment, ok := internal.ParseComment(decl, expComment)
-				if !ok {
+				comment, err := internal.ParseComment(decl)
+				if err != nil {
+					return nil, err
+				}
+
+				if comment == nil {
 					continue
 				}
 
-				result := internal.NewResult(mapData.CountType)
-				result.StructName = comment
+				result := internal.NewResult(comment.CountType)
+				result.StructName = comment.StructName
 
 				for _, spec := range decl.Specs {
 					vSpec, ok := spec.(*ast.ValueSpec)
@@ -105,5 +105,5 @@ func analysisFileByMap(mapData MapParams) (*internal.Results, error) {
 		}
 	}
 
-	return internal.NewResults(f.Name.Name, results), nil
+	return internal.NewFileResult(f.Name.Name, results), nil
 }
