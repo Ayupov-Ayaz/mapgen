@@ -3,6 +3,11 @@ package internal
 import (
 	"errors"
 	"go/ast"
+	"strings"
+)
+
+const (
+	expComment = "//map_gen:"
 )
 
 func ParseMapValues(cl *ast.CompositeLit) (map[string]MapValData, error) {
@@ -81,28 +86,6 @@ func GetMapVal(expr ast.Expr) (string, error) {
 	return arr, nil
 }
 
-func ParseKeyValueTypeFromIdent(ident *ast.Ident) (*MapKeyValue, error) {
-	typeSpec, err := CastTypeSpec(ident.Obj.Decl)
-	if err != nil {
-		return nil, err
-	}
-
-	mapType, err := CastMapType(typeSpec.Type)
-	if err != nil {
-		return nil, err
-	}
-	key, err := ParseAstIdentName(mapType.Key)
-	if err != nil {
-		return nil, err
-	}
-	val, err := GetMapVal(mapType.Value)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewMapKeyVal(NewSpecType("", key), NewSpecType("", val)), nil
-}
-
 func ParseImport(spec ast.Spec) (string, error) {
 	imp, err := CastImportSpec(spec)
 	if err != nil {
@@ -138,4 +121,23 @@ func ParseKeyValueTypeFromMapType(mapType *ast.MapType) (*MapKeyValue, error) {
 	val := NewSpecType("", valData.Name)
 
 	return NewMapKeyVal(key, val), nil
+}
+
+func ParseComment(decl *ast.GenDecl) (*Comment, error) {
+	if decl.Doc != nil {
+		if len(decl.Doc.List) > 0 {
+			for _, c := range decl.Doc.List {
+				if strings.Contains(c.Text, expComment) {
+					c := NewComment(c.Text, expComment)
+					if len(c.StructName) == 0 {
+						return nil, errors.New("tag name not found")
+					}
+
+					return c, nil
+				}
+			}
+		}
+	}
+
+	return nil, nil
 }

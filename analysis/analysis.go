@@ -26,13 +26,13 @@ func parseImports(d *ast.GenDecl) ([]string, error) {
 	return imports, nil
 }
 
-func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
-	result := internal.NewResult(mapData.CountType)
+func analysisFileByMap(mapData MapParams) (*internal.FileResult, error) {
+	results := make([]internal.Result, 0, 2)
 
 	fSet := token.NewFileSet()
-	f, err := parser.ParseFile(fSet, mapData.FilePath, nil, 0)
+	f, err := parser.ParseFile(fSet, mapData.FilePath, nil, parser.ParseComments)
 	if err != nil {
-		return result, fmt.Errorf("ParseFile failed: %w", err)
+		return nil, fmt.Errorf("ParseFile failed: %w", err)
 	}
 
 	var (
@@ -51,6 +51,18 @@ func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 				}
 
 			case token.VAR:
+				comment, err := internal.ParseComment(decl)
+				if err != nil {
+					return nil, err
+				}
+
+				if comment == nil {
+					continue
+				}
+
+				result := internal.NewResult(comment.CountType)
+				result.StructName = comment.StructName
+
 				for _, spec := range decl.Specs {
 					vSpec, ok := spec.(*ast.ValueSpec)
 					if !ok {
@@ -64,26 +76,14 @@ func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 								continue
 							}
 
-							astIdent, ok := lit.Type.(*ast.Ident)
-							if ok {
-								if astIdent.Name != mapData.MapType {
-									continue
-								}
+							mapType, err := internal.CastMapType(lit.Type)
+							if err != nil {
+								return nil, err
+							}
 
-								mapKeyVal, err = internal.ParseKeyValueTypeFromIdent(astIdent)
-								if err != nil {
-									return nil, err
-								}
-							} else {
-								mapType, err := internal.CastMapType(lit.Type)
-								if err != nil {
-									return nil, err
-								}
-
-								mapKeyVal, err = internal.ParseKeyValueTypeFromMapType(mapType)
-								if err != nil {
-									return nil, err
-								}
+							mapKeyVal, err = internal.ParseKeyValueTypeFromMapType(mapType)
+							if err != nil {
+								return nil, err
 							}
 
 							v, err := internal.ParseMapValues(lit)
@@ -91,11 +91,13 @@ func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 								return nil, err
 							}
 
-							md := internal.NewMapData(mapData.MapType, *mapKeyVal, v)
+							md := internal.NewMapData(*mapKeyVal, v)
 							result.SetMapData(md)
 
 							imps := helpers.GetNeedImports(*mapKeyVal, imports)
 							result.SetImports(imps)
+
+							results = append(results, *result)
 						}
 					}
 				}
@@ -103,5 +105,5 @@ func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 		}
 	}
 
-	return result, nil
+	return internal.NewFileResult(f.Name.Name, results), nil
 }
