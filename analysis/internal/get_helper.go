@@ -81,7 +81,7 @@ func GetMapVal(expr ast.Expr) (string, error) {
 	return arr, nil
 }
 
-func GetKeyValueType(ident *ast.Ident) (string, string, error) {
+func GetKeyValueTypeFromIdent(ident *ast.Ident) (string, string, error) {
 	typeSpec, err := CastTypeSpec(ident.Obj.Decl)
 	if err != nil {
 		return "", "", err
@@ -101,4 +101,32 @@ func GetKeyValueType(ident *ast.Ident) (string, string, error) {
 	}
 
 	return mapKeyData, mapValData, nil
+}
+
+func GetKeyValueTypeFromMapType(mapType *ast.MapType) (string, string, error) {
+	selector, err := GetSelectorExpr(mapType.Key)
+	if err != nil {
+		return "", "", err
+	}
+
+	selectorX, err := CastAstIdent(selector.X)
+	if err != nil {
+		return "", "", err
+	}
+
+	key := selectorX.Name + "." + selector.Sel.Name
+
+	arrType, err := CastArrayType(mapType.Value)
+	if err != nil {
+		return "", "", err
+	}
+
+	valData, err := CastAstIdent(arrType.Elt)
+	if err != nil {
+		return "", "", err
+	}
+
+	val := valData.Name
+
+	return key, val, nil
 }
