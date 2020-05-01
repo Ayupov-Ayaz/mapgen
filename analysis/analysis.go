@@ -20,8 +20,7 @@ func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 	}
 
 	var (
-		mapKeyType string
-		mapValType string
+		mapKeyVal *internal.MapKeyValue
 	)
 
 	for _, decl := range f.Decls {
@@ -48,7 +47,7 @@ func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 									continue
 								}
 
-								mapKeyType, mapValType, err = internal.ParseKeyValueTypeFromIdent(astIdent)
+								mapKeyVal, err = internal.ParseKeyValueTypeFromIdent(astIdent)
 								if err != nil {
 									return nil, err
 								}
@@ -58,7 +57,7 @@ func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 									return nil, err
 								}
 
-								mapKeyType, mapValType, err = internal.ParseKeyValueTypeFromMapType(mapType)
+								mapKeyVal, err = internal.ParseKeyValueTypeFromMapType(mapType)
 								if err != nil {
 									return nil, err
 								}
@@ -69,7 +68,7 @@ func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 								return nil, err
 							}
 
-							md := internal.NewMapData(mapData.MapType, mapKeyType, mapValType, v)
+							md := internal.NewMapData(mapData.MapType, *mapKeyVal, v)
 							result.SetMapData(md)
 						}
 					}

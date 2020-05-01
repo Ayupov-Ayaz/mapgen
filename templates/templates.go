@@ -5,12 +5,12 @@ package {{.Package}}
 
 type {{$.Type}} struct {}
 
-func (p {{$.Type}}) Get(i {{$.Map.KeyType}}, count int) {{$.Map.ValType}} {
+func (p {{$.Type}}) Get(i {{$.Map.KV.Key.FullType}}, count int) {{$.Map.KV.Val.FullType}} {
 	switch i {
 		{{range $key, $val := $.Map.Data }}
 			case {{$key}}:
 				if count < {{$val.Length}} && count >= 0  {
-					return {{"[]"}}{{$.Map.ValType}}{{"{"}}{{$val.Join}}{{"}"}}[count]
+					return {{"[]"}}{{$.Map.KV.Val.FullType}}{{"{"}}{{$val.Join}}{{"}"}}[count]
 				}
 		{{end}}
 	}

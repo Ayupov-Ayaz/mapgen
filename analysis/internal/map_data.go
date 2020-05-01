@@ -10,8 +10,7 @@ type MapValData struct {
 
 type MapData struct {
 	MapType string
-	KeyType string
-	ValType string
+	KV      MapKeyValue
 	Data    map[string]MapValData
 }
 
@@ -23,11 +22,10 @@ func NewMapValData(data []string) MapValData {
 	}
 }
 
-func NewMapData(mapType, keyType, valType string, data map[string]MapValData) MapData {
+func NewMapData(mapType string, keyVal MapKeyValue, data map[string]MapValData) MapData {
 	return MapData{
 		MapType: mapType,
-		KeyType: keyType,
-		ValType: valType,
+		KV:      keyVal,
 		Data:    data,
 	}
 }
