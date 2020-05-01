@@ -5,7 +5,7 @@ import (
 	"go/ast"
 )
 
-func GetMapValues(cl *ast.CompositeLit) (map[string]MapValData, error) {
+func ParseMapValues(cl *ast.CompositeLit) (map[string]MapValData, error) {
 	results := make(map[string]MapValData, len(cl.Elts))
 
 	for _, v := range cl.Elts {
@@ -40,7 +40,7 @@ func GetMapValues(cl *ast.CompositeLit) (map[string]MapValData, error) {
 	return results, nil
 }
 
-func GetArrayType(expr ast.Expr) (string, error) {
+func ParseArrayType(expr ast.Expr) (string, error) {
 	arr, err := CastArrayType(expr)
 	if err != nil {
 		return "", err
@@ -54,7 +54,7 @@ func GetArrayType(expr ast.Expr) (string, error) {
 	return ident.Name, nil
 }
 
-func GetAstIdentName(expr ast.Expr) (string, error) {
+func ParseAstIdentName(expr ast.Expr) (string, error) {
 	i, err := CastAstIdent(expr)
 	if err != nil {
 		return "", err
@@ -73,7 +73,7 @@ func GetMapVal(expr ast.Expr) (string, error) {
 		return i.Name, nil
 	}
 
-	arr, err := GetArrayType(expr)
+	arr, err := ParseArrayType(expr)
 	if err != nil {
 		return "", err
 	}
@@ -81,24 +81,61 @@ func GetMapVal(expr ast.Expr) (string, error) {
 	return arr, nil
 }
 
-func GetKeyValueType(ident *ast.Ident) (string, string, error) {
+func ParseKeyValueTypeFromIdent(ident *ast.Ident) (*MapKeyValue, error) {
 	typeSpec, err := CastTypeSpec(ident.Obj.Decl)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	mapType, err := CastMapType(typeSpec.Type)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
-	mapKeyData, err := GetAstIdentName(mapType.Key)
+	key, err := ParseAstIdentName(mapType.Key)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
-	mapValData, err := GetMapVal(mapType.Value)
+	val, err := GetMapVal(mapType.Value)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
-	return mapKeyData, mapValData, nil
+	return NewMapKeyVal(NewSpecType("", key), NewSpecType("", val)), nil
+}
+
+func ParseImport(spec ast.Spec) (string, error) {
+	imp, err := CastImportSpec(spec)
+	if err != nil {
+		return "", err
+	}
+
+	return imp.Path.Value, nil
+}
+
+func ParseKeyValueTypeFromMapType(mapType *ast.MapType) (*MapKeyValue, error) {
+	selector, err := GetSelectorExpr(mapType.Key)
+	if err != nil {
+		return nil, err
+	}
+
+	selectorX, err := CastAstIdent(selector.X)
+	if err != nil {
+		return nil, err
+	}
+
+	key := NewSpecType(selectorX.Name, selector.Sel.Name)
+
+	arrType, err := CastArrayType(mapType.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	valData, err := CastAstIdent(arrType.Elt)
+	if err != nil {
+		return nil, err
+	}
+
+	val := NewSpecType("", valData.Name)
+
+	return NewMapKeyVal(key, val), nil
 }

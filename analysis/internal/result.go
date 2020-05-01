@@ -3,11 +3,11 @@ package internal
 import "strings"
 
 type Result struct {
-	DataList []string
-	List     string
-	Package  string
-	Type     string
-	Map      MapData
+	Imports []string
+	List    string
+	Package string
+	Type    string
+	Map     MapData
 }
 
 func NewResult(Type string) *Result {
@@ -26,4 +26,8 @@ func (r *Result) SetPackage(_package string) {
 
 func (r *Result) SetMapData(md MapData) {
 	r.Map = md
+}
+
+func (r *Result) SetImports(imps []string) {
+	r.Imports = imps
 }

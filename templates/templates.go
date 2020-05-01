@@ -3,14 +3,19 @@ package templates
 const MapImpl = `//CODE GENERATED AUTOMATICALLY. DO NOT EDIT.
 package {{.Package}}
 
+import (
+{{range $k, $val := $.Imports}}
+{{$val}}{{end}}	
+)
+
 type {{$.Type}} struct {}
 
-func (p {{$.Type}}) Get(i {{$.Map.KeyType}}, count int) {{$.Map.ValType}} {
-	switch i {
+func (p {{$.Type}}) Get(s {{$.Map.KV.Key.FullType}}, count int) {{$.Map.KV.Val.FullType}} {
+	switch s {
 		{{range $key, $val := $.Map.Data }}
 			case {{$key}}:
 				if count < {{$val.Length}} && count >= 0  {
-					return {{"[]"}}{{$.Map.ValType}}{{"{"}}{{$val.Join}}{{"}"}}[count]
+					return {{"[]"}}{{$.Map.KV.Val.FullType}}{{"{"}}{{$val.Join}}{{"}"}}[count]
 				}
 		{{end}}
 	}
