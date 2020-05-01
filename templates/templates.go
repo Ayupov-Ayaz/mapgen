@@ -10,7 +10,7 @@ import (
 
 type {{$.Type}} struct {}
 
-func (p {{$.Type}}) Get(s {{$.Map.KV.Key.FullType}}, count int) {{$.Map.KV.Val.FullType}} {
+func (p {{$.Type}}) Get(s {{$.Map.KV.Key.FullType}}, count {{$.CountType}}) {{$.Map.KV.Val.FullType}} {
 	switch s {
 		{{range $key, $val := $.Map.Data }}
 			case {{$key}}:

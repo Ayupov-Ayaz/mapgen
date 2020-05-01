@@ -27,7 +27,7 @@ func parseImports(d *ast.GenDecl) ([]string, error) {
 }
 
 func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
-	result := internal.NewResult("")
+	result := internal.NewResult(mapData.CountType)
 
 	fSet := token.NewFileSet()
 	f, err := parser.ParseFile(fSet, mapData.FilePath, nil, 0)
