@@ -70,6 +70,15 @@ func CastKeyValueExpr(expr ast.Expr) (*ast.KeyValueExpr, error) {
 	return e, nil
 }
 
+func GetSelectorExpr(expr ast.Expr) (*ast.SelectorExpr, error) {
+	s, ok := expr.(*ast.SelectorExpr)
+	if !ok {
+		return nil, ErrCastFailed
+	}
+
+	return s, nil
+}
+
 func CastSliceBasicList(expr []ast.Expr) ([]*ast.BasicLit, error) {
 	bls := make([]*ast.BasicLit, len(expr))
 	for i, e := range expr {

@@ -19,6 +19,11 @@ func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 		return result, fmt.Errorf("ParseFile failed: %w", err)
 	}
 
+	var (
+		mapKeyType string
+		mapValType string
+	)
+
 	for _, decl := range f.Decls {
 		switch decl := decl.(type) {
 		case *ast.GenDecl:
@@ -37,25 +42,35 @@ func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 								continue
 							}
 
-							astIdent, err := internal.CastAstIdent(lit.Type)
+							astIdent, ok := lit.Type.(*ast.Ident)
+							if ok {
+								if astIdent.Name != mapData.MapType {
+									continue
+								}
+
+								mapKeyType, mapValType, err = internal.GetKeyValueTypeFromIdent(astIdent)
+								if err != nil {
+									return nil, err
+								}
+							} else {
+								mapType, err := internal.CastMapType(lit.Type)
+								if err != nil {
+									return nil, err
+								}
+
+								mapKeyType, mapValType, err = internal.GetKeyValueTypeFromMapType(mapType)
+								if err != nil {
+									return nil, err
+								}
+							}
+
+							v, err := internal.GetMapValues(lit)
 							if err != nil {
 								return nil, err
 							}
 
-							if astIdent.Name == mapData.MapType {
-								mapKeyType, mapValType, err := internal.GetKeyValueType(astIdent)
-								if err != nil {
-									return nil, err
-								}
-
-								v, err := internal.GetMapValues(lit)
-								if err != nil {
-									return nil, err
-								}
-
-								md := internal.NewMapData(mapData.MapType, mapKeyType, mapValType, v)
-								result.SetMapData(md)
-							}
+							md := internal.NewMapData(mapData.MapType, mapKeyType, mapValType, v)
+							result.SetMapData(md)
 						}
 					}
 				}
