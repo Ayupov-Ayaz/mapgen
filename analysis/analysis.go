@@ -119,5 +119,5 @@ func analysisFileByMap(mapData MapParams) (*internal.Results, error) {
 		}
 	}
 
-	return internal.NewResults("", results), nil
+	return internal.NewResults(f.Name.Name, results), nil
 }
