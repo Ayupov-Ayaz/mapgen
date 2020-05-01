@@ -3,16 +3,17 @@ package internal
 import "strings"
 
 type Result struct {
-	Imports []string
-	List    string
-	Package string
-	Type    string
-	Map     MapData
+	Imports   []string
+	List      string
+	Package   string
+	Type      string
+	Map       MapData
+	CountType string
 }
 
-func NewResult(Type string) *Result {
+func NewResult(countType string) *Result {
 	return &Result{
-		Type: Type,
+		CountType: countType,
 	}
 }
 
