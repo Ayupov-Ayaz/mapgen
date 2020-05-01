@@ -22,7 +22,6 @@ func GenerateMapByString(w TemplateRecorder, data MapParams) error {
 	}
 
 	result.SetPackage(data.PackageName)
-	result.Type = data.StructName
 	t := prepareTemplate(templates.MapImpl)
 
 	if err := w.RecordToFile(data.FilePath, t, result); err != nil {
