@@ -48,7 +48,7 @@ func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 									continue
 								}
 
-								mapKeyType, mapValType, err = internal.GetKeyValueTypeFromIdent(astIdent)
+								mapKeyType, mapValType, err = internal.ParseKeyValueTypeFromIdent(astIdent)
 								if err != nil {
 									return nil, err
 								}
@@ -58,13 +58,13 @@ func analysisFileByMap(mapData MapParams) (*internal.Result, error) {
 									return nil, err
 								}
 
-								mapKeyType, mapValType, err = internal.GetKeyValueTypeFromMapType(mapType)
+								mapKeyType, mapValType, err = internal.ParseKeyValueTypeFromMapType(mapType)
 								if err != nil {
 									return nil, err
 								}
 							}
 
-							v, err := internal.GetMapValues(lit)
+							v, err := internal.ParseMapValues(lit)
 							if err != nil {
 								return nil, err
 							}

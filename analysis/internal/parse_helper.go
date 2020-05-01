@@ -5,7 +5,7 @@ import (
 	"go/ast"
 )
 
-func GetMapValues(cl *ast.CompositeLit) (map[string]MapValData, error) {
+func ParseMapValues(cl *ast.CompositeLit) (map[string]MapValData, error) {
 	results := make(map[string]MapValData, len(cl.Elts))
 
 	for _, v := range cl.Elts {
@@ -40,7 +40,7 @@ func GetMapValues(cl *ast.CompositeLit) (map[string]MapValData, error) {
 	return results, nil
 }
 
-func GetArrayType(expr ast.Expr) (string, error) {
+func ParseArrayType(expr ast.Expr) (string, error) {
 	arr, err := CastArrayType(expr)
 	if err != nil {
 		return "", err
@@ -54,7 +54,7 @@ func GetArrayType(expr ast.Expr) (string, error) {
 	return ident.Name, nil
 }
 
-func GetAstIdentName(expr ast.Expr) (string, error) {
+func ParseAstIdentName(expr ast.Expr) (string, error) {
 	i, err := CastAstIdent(expr)
 	if err != nil {
 		return "", err
@@ -73,7 +73,7 @@ func GetMapVal(expr ast.Expr) (string, error) {
 		return i.Name, nil
 	}
 
-	arr, err := GetArrayType(expr)
+	arr, err := ParseArrayType(expr)
 	if err != nil {
 		return "", err
 	}
@@ -81,7 +81,7 @@ func GetMapVal(expr ast.Expr) (string, error) {
 	return arr, nil
 }
 
-func GetKeyValueTypeFromIdent(ident *ast.Ident) (string, string, error) {
+func ParseKeyValueTypeFromIdent(ident *ast.Ident) (string, string, error) {
 	typeSpec, err := CastTypeSpec(ident.Obj.Decl)
 	if err != nil {
 		return "", "", err
@@ -91,7 +91,7 @@ func GetKeyValueTypeFromIdent(ident *ast.Ident) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	mapKeyData, err := GetAstIdentName(mapType.Key)
+	mapKeyData, err := ParseAstIdentName(mapType.Key)
 	if err != nil {
 		return "", "", err
 	}
@@ -103,7 +103,7 @@ func GetKeyValueTypeFromIdent(ident *ast.Ident) (string, string, error) {
 	return mapKeyData, mapValData, nil
 }
 
-func GetKeyValueTypeFromMapType(mapType *ast.MapType) (string, string, error) {
+func ParseKeyValueTypeFromMapType(mapType *ast.MapType) (string, string, error) {
 	selector, err := GetSelectorExpr(mapType.Key)
 	if err != nil {
 		return "", "", err
