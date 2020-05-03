@@ -101,3 +101,12 @@ func CastSliceBasicList(expr []ast.Expr) ([]*ast.BasicLit, error) {
 
 	return bls, nil
 }
+
+func CastValueSpec(s ast.Spec) (*ast.ValueSpec, error) {
+	vc, ok := s.(*ast.ValueSpec)
+	if !ok {
+		return nil, ErrCastFailed
+	}
+
+	return vc, nil
+}
