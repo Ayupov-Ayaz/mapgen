@@ -26,9 +26,99 @@ func parseImports(d *ast.GenDecl) ([]string, error) {
 	return imports, nil
 }
 
-func analysisFileByMap(mapData MapParams) (*internal.FileResult, error) {
+func parseResult(vcs *ast.ValueSpec, countType string, imports []string) (*internal.Result, error) {
+	result := internal.NewResult(countType)
+
+	for _, sv := range vcs.Values {
+		lit, err := internal.CastCompositeLit(sv)
+		if err != nil && errors.Is(err, internal.ErrCastFailed) {
+			continue
+		}
+
+		mapType, err := internal.CastMapType(lit.Type)
+		if err != nil {
+			return nil, err
+		}
+
+		mapKeyVal, err := internal.ParseKeyValueTypeFromMapType(mapType)
+		if err != nil {
+			return nil, err
+		}
+
+		v, err := internal.ParseMapValues(lit)
+		if err != nil {
+			return nil, err
+		}
+
+		md := internal.NewMapData(*mapKeyVal, v)
+		result.SetMapData(md)
+
+		imps := helpers.GetNeedImports(*mapKeyVal, imports)
+		result.SetImports(imps)
+	}
+
+	return result, nil
+}
+
+func analysisSingleVar(decl *ast.GenDecl, imports []string) ([]internal.Result, error) {
 	results := make([]internal.Result, 0, 2)
 
+	comment, err := internal.ParseCommentFromSingleValParam(decl)
+	if err != nil {
+		return nil, err
+	}
+
+	if comment == nil {
+		return nil, nil
+	}
+
+	result := internal.NewResult(comment.CountType)
+	result.StructName = comment.StructName
+
+	for _, spec := range decl.Specs {
+		vc, ok := spec.(*ast.ValueSpec)
+		if !ok {
+			continue
+		}
+
+		result, err := parseResult(vc, comment.CountType, imports)
+		if err != nil {
+			return nil, err
+		}
+
+		result.StructName = comment.StructName
+		results = append(results, *result)
+	}
+
+	return results, nil
+}
+
+func analysisMultiVar(decl *ast.GenDecl, imports []string) ([]internal.Result, error) {
+	results := make([]internal.Result, 0, 2)
+
+	comments, vcs, err := internal.ParseCommentsFromMultiValParam(decl)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(comments) == 0 {
+		return nil, nil
+	}
+
+	for i, comment := range comments {
+		result, err := parseResult(vcs[i], comment.CountType, imports)
+		if err != nil {
+			return nil, err
+		}
+
+		result.StructName = comment.StructName
+		results = append(results, *result)
+	}
+
+	return results, nil
+}
+
+func analysisFileByMap(mapData MapParams) (*internal.FileResult, error) {
 	fSet := token.NewFileSet()
 	f, err := parser.ParseFile(fSet, mapData.FilePath, nil, parser.ParseComments)
 	if err != nil {
@@ -36,8 +126,10 @@ func analysisFileByMap(mapData MapParams) (*internal.FileResult, error) {
 	}
 
 	var (
-		mapKeyVal *internal.MapKeyValue
-		imports   []string
+		imports    []string
+		results    []internal.Result
+		mResults   []internal.Result
+		allResults []internal.Result
 	)
 
 	for _, decl := range f.Decls {
@@ -51,59 +143,26 @@ func analysisFileByMap(mapData MapParams) (*internal.FileResult, error) {
 				}
 
 			case token.VAR:
-				comment, err := internal.ParseComment(decl)
+				mResults, err = analysisMultiVar(decl, imports)
 				if err != nil {
 					return nil, err
 				}
 
-				if comment == nil {
-					continue
+				results, err = analysisSingleVar(decl, imports)
+				if err != nil {
+					return nil, err
 				}
 
-				result := internal.NewResult(comment.CountType)
-				result.StructName = comment.StructName
+				if len(results) > 0 {
+					allResults = append(allResults, results...)
+				}
 
-				for _, spec := range decl.Specs {
-					vSpec, ok := spec.(*ast.ValueSpec)
-					if !ok {
-						continue
-					}
-
-					if len(vSpec.Values) > 0 {
-						for _, sv := range vSpec.Values {
-							lit, err := internal.CastCompositeLit(sv)
-							if err != nil && errors.Is(err, internal.ErrCastFailed) {
-								continue
-							}
-
-							mapType, err := internal.CastMapType(lit.Type)
-							if err != nil {
-								return nil, err
-							}
-
-							mapKeyVal, err = internal.ParseKeyValueTypeFromMapType(mapType)
-							if err != nil {
-								return nil, err
-							}
-
-							v, err := internal.ParseMapValues(lit)
-							if err != nil {
-								return nil, err
-							}
-
-							md := internal.NewMapData(*mapKeyVal, v)
-							result.SetMapData(md)
-
-							imps := helpers.GetNeedImports(*mapKeyVal, imports)
-							result.SetImports(imps)
-
-							results = append(results, *result)
-						}
-					}
+				if len(mResults) > 0 {
+					allResults = append(allResults, mResults...)
 				}
 			}
 		}
 	}
 
-	return internal.NewFileResult(f.Name.Name, results), nil
+	return internal.NewFileResult(f.Name.Name, allResults), nil
 }
