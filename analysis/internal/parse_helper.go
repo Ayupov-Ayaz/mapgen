@@ -123,7 +123,7 @@ func ParseKeyValueTypeFromMapType(mapType *ast.MapType) (*MapKeyValue, error) {
 	return NewMapKeyVal(key, val), nil
 }
 
-func ParseComment(decl *ast.GenDecl) (*Comment, error) {
+func ParseCommentFromSingleValParam(decl *ast.GenDecl) (*Comment, error) {
 	if decl.Doc != nil {
 		if len(decl.Doc.List) > 0 {
 			for _, c := range decl.Doc.List {
@@ -140,4 +140,34 @@ func ParseComment(decl *ast.GenDecl) (*Comment, error) {
 	}
 
 	return nil, nil
+}
+
+func ParseCommentsFromMultiValParam(decl *ast.GenDecl) ([]*Comment, []*ast.ValueSpec, error) {
+	comments := make([]*Comment, 0, len(decl.Specs))
+	vcs := make([]*ast.ValueSpec, 0, len(decl.Specs))
+
+	for _, valueSpec := range decl.Specs {
+		vc, err := CastValueSpec(valueSpec)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if vc.Doc == nil {
+			return nil, nil, nil
+		}
+
+		for _, c := range vc.Doc.List {
+			if strings.Contains(c.Text, expComment) {
+				c := NewComment(c.Text, expComment)
+				if len(c.StructName) == 0 {
+					return nil, nil, errors.New("tag name not found")
+				}
+
+				comments = append(comments, c)
+				vcs = append(vcs, vc)
+			}
+		}
+	}
+
+	return comments, vcs, nil
 }
