@@ -73,7 +73,7 @@ func analysisSingleVar(decl *ast.GenDecl, imports []string) ([]internal.Result, 
 	}
 
 	result := internal.NewResult(comment.CountType)
-	result.StructName = comment.StructName
+	result.FuncName = comment.StructName
 
 	for _, spec := range decl.Specs {
 		vc, ok := spec.(*ast.ValueSpec)
@@ -86,7 +86,7 @@ func analysisSingleVar(decl *ast.GenDecl, imports []string) ([]internal.Result, 
 			return nil, err
 		}
 
-		result.StructName = comment.StructName
+		result.FuncName = comment.StructName
 		results = append(results, *result)
 	}
 
@@ -111,7 +111,7 @@ func analysisMultiVar(decl *ast.GenDecl, imports []string) ([]internal.Result, e
 			return nil, err
 		}
 
-		result.StructName = comment.StructName
+		result.FuncName = comment.StructName
 		results = append(results, *result)
 	}
 

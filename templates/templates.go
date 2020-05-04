@@ -7,8 +7,7 @@ import ({{range $k, $val := $.Imports}}
 {{$val}}{{end}}	
 )
 {{range $i, $result := $.R}}
-type {{$result.StructName}} struct {}
-func (p {{$result.StructName}}) Get(s {{$result.KeyType}}, count {{$result.CountType}}) {{$result.ValType}} {
+func {{$result.FuncName}} (s {{$result.KeyType}}, count {{$result.CountType}}) {{$result.ValType}} {
 	switch s {
 		{{range $key, $val := $result.Map.Data }}
 			case {{$key}}:

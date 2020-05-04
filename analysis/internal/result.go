@@ -3,14 +3,14 @@ package internal
 import "strings"
 
 type Result struct {
-	Imports    []string
-	List       string
-	StructName string
-	KeyType    string
-	ValType    string
-	Map        MapData
-	CountType  string
-	Condition  string
+	Imports   []string
+	List      string
+	FuncName  string
+	KeyType   string
+	ValType   string
+	Map       MapData
+	CountType string
+	Condition string
 }
 
 func NewResult(countType string) *Result {
