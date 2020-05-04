@@ -153,7 +153,7 @@ func ParseCommentsFromMultiValParam(decl *ast.GenDecl) ([]*Comment, []*ast.Value
 		}
 
 		if vc.Doc == nil {
-			return nil, nil, nil
+			continue
 		}
 
 		for _, c := range vc.Doc.List {
