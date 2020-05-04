@@ -10,8 +10,8 @@ const (
 	expComment = "//map_gen:"
 )
 
-func ParseMapValues(cl *ast.CompositeLit) (map[string]MapValData, error) {
-	results := make(map[string]MapValData, len(cl.Elts))
+func ParseMapValues(cl *ast.CompositeLit) (map[string][]string, error) {
+	results := make(map[string][]string, len(cl.Elts))
 
 	for _, v := range cl.Elts {
 		kvExpr, err := CastKeyValueExpr(v)
@@ -39,7 +39,7 @@ func ParseMapValues(cl *ast.CompositeLit) (map[string]MapValData, error) {
 			vData[i] = values[i].Value
 		}
 
-		results[key.Value] = NewMapValData(vData)
+		results[key.Value] = vData
 	}
 
 	return results, nil

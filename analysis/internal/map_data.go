@@ -1,27 +1,11 @@
 package internal
 
-import "strings"
-
-type MapValData struct {
-	Length int
-	Vals   []string
-	Join   string
-}
-
 type MapData struct {
 	KV   MapKeyValue
-	Data map[string]MapValData
+	Data map[string][]string
 }
 
-func NewMapValData(data []string) MapValData {
-	return MapValData{
-		Length: len(data),
-		Vals:   data,
-		Join:   strings.Join(data, ", "),
-	}
-}
-
-func NewMapData(keyVal MapKeyValue, data map[string]MapValData) MapData {
+func NewMapData(keyVal MapKeyValue, data map[string][]string) MapData {
 	return MapData{
 		KV:   keyVal,
 		Data: data,
