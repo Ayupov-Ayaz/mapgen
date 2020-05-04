@@ -12,7 +12,7 @@ func {{$result.FuncName}} (s {{$result.KeyType}}, count {{$result.CountType}}) {
 		{{range $key, $val := $result.Map.Data }}
 			case {{$key}}:
 				switch count { {{range $j, $v := $val}}
-					case {{$j}}: return {{$v}}{{end}}
+					case {{inc $j}}: return {{$v}}{{end}}
 				}{{end}}}
 	return 0
 }

@@ -12,7 +12,14 @@ type TemplateRecorder interface {
 }
 
 func prepareTemplate(templatePath string) *template.Template {
-	return template.Must(template.New("const-list").Parse(templatePath))
+
+	funcMap := template.FuncMap{
+		"inc": func(i int) int {
+			return i + 1
+		},
+	}
+
+	return template.Must(template.New("Map to Switch case").Funcs(funcMap).Parse(templatePath))
 }
 
 func GenerateMapByString(w TemplateRecorder, data MapParams) error {
