@@ -1,10 +1,7 @@
 package internal
 
-import "strings"
-
 type Result struct {
 	Imports   []string
-	List      string
 	FuncName  string
 	KeyType   string
 	ValType   string
@@ -24,10 +21,6 @@ func NewResult(countType string) *Result {
 		Condition: condition,
 		CountType: countType,
 	}
-}
-
-func (r *Result) SetList(list []string) {
-	r.List = strings.Join(list, ", ")
 }
 
 func (r *Result) SetMapData(md MapData) {

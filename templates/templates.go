@@ -11,10 +11,9 @@ func {{$result.FuncName}} (s {{$result.KeyType}}, count {{$result.CountType}}) {
 	switch s {
 		{{range $key, $val := $result.Map.Data }}
 			case {{$key}}:
-				if count < {{$val.Length}}{{$result.Condition}}{
-					return {{"[]"}}{{$result.ValType}}{{"{"}}{{$val.Join}}{{"}"}}[count]}
-		{{end}}
-	}
+				switch count { {{range $j, $v := $val}}
+					case {{$j}}: return {{$v}}{{end}}
+				}{{end}}}
 	return 0
 }
 
